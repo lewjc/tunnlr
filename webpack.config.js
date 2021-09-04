@@ -24,6 +24,9 @@ module.exports = [
       path: __dirname + "/dist",
       filename: "tunnlr.js",
     },
+    resolve: {
+      extensions: [".tsx", ".ts", ".js"],
+    },
     plugins: [new ElectronReload()],
   },
   {
@@ -35,14 +38,17 @@ module.exports = [
       rules: [
         {
           test: /\.ts(x?)$/,
-          include: /src/,
-          exclude: /node_modules/,
+          include: path.resolve(__dirname, "src/renderer"),
           use: ["react-hot-loader/webpack", "ts-loader"],
         },
         {
+          test: /\.scss$/,
+          include: path.resolve(__dirname, "src/renderer"),
+          use: ["style-loader", "css-loader", "sass-loader"],
+        },
+        {
           test: /\global\.css$/i,
-          include: path.resolve(__dirname, "src"),
-          exclude: /node_modules/,
+          include: path.resolve(__dirname, "src/renderer"),
           use: ["style-loader", "css-loader", "postcss-loader"],
         },
       ],
