@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { RootState } from "..";
+import type { AppDispatch, RootState } from "..";
 import { GlobalShare } from "../../../global";
 import { IpcMain, IpcRenderer } from "electron";
 import { Services } from "../../../main/service";
@@ -39,7 +39,7 @@ export const globalSlice = createSlice({
 
 export const { set, startLoading } = globalSlice.actions;
 
-export const loadGlobal = (dispatch) => {
+export const loadGlobal = (dispatch: AppDispatch) => {
   dispatch(startLoading());
   const globalShare = JSON.parse(ipcRenderer.sendSync("global"));
   dispatch(set(globalShare));

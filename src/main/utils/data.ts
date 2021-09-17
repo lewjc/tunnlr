@@ -16,3 +16,11 @@ export const getTunnlrDataPath = () => {
 export const getTunnlrHostsFile = () => {
   return join(tunnlrDataPath, "hosts.json");
 };
+
+export const getTunnlrPortMappingsFile = () => {
+  return join(tunnlrDataPath, "portMappings.json");
+};
+
+export const getTunnlrSystemFile = () => {
+  return join(tunnlrDataPath, "system.json");
+};

@@ -6,13 +6,15 @@ import {
 
 const service = require("./service");
 
-export interface HostService {
-  definition: ServiceFunctionDefinitions<HostFunctionDefinitions>;
+export interface PortMappingsService {
+  definition: ServiceFunctionDefinitions<PortMappingsFunctionDefinitions>;
   functions: ServiceFunctions<HostFunctions>;
 }
 
-export interface HostFunctionDefinitions {
-  getHosts: ServiceFunctionEvents;
+export interface PortMappingsFunctionDefinitions {
+  getPortMappings: ServiceFunctionEvents;
+  addPortMapping: ServiceFunctionEvents;
+  addPortMappingLabels: ServiceFunctionEvents;
 }
 
 export interface HostFunctions {

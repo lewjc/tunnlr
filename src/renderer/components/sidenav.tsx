@@ -23,12 +23,12 @@ export default function SideNav() {
         route: "/ports",
       },
       {
-        title: "Tunnels",
+        title: "Tunnel Configurations",
         icon: <ChipIcon className="h-6 w-6 inline" />,
         route: "/tunnels",
       },
       {
-        title: "Configuration",
+        title: "System",
         icon: <CogIcon className="h-6 w-6 inline" />,
         route: "/configuration",
       },

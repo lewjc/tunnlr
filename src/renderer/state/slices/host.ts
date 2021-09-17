@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { AppDispatch, RootState } from "..";
-import { GlobalShare, Host } from "../../../global";
+import { GlobalShare, HostConfig } from "../../../global";
 import { IpcMain } from "electron";
 import { Services } from "../../../main/service";
 import { HostService } from "../../../main/service/host";
@@ -9,10 +9,7 @@ const { ipcRenderer } = window.require("electron");
 // Define a type for the slice state
 
 interface HostState {
-  hosts: {
-    system: Array<Host>;
-    user: Array<Host>;
-  };
+  hosts: HostConfig;
   fetching: boolean;
   error: boolean;
 }
@@ -53,9 +50,7 @@ export const fetchHosts = async (
   dispatch: AppDispatch,
   globalShare: GlobalShare
 ) => {
-  console.log(globalShare);
   const { definition } = globalShare.services.host;
-  console.log(definition);
   dispatch(startLoading());
   try {
     ipcRenderer.send(definition.getHosts.send);

@@ -16,8 +16,26 @@ declare module "*.scss" {
   export = content;
 }
 
+export interface HostConfig {
+  system: Array<Host>;
+  user: Array<Host>;
+}
+
 export interface Host {
   ip: string;
   domain: string;
   id: number;
+}
+
+export interface PortMappingConfig {
+  mappings: Array<PortMapping>;
+}
+
+export interface PortMapping {
+  port: number;
+  labels: Array<string>;
+}
+
+export interface SystemConfig {
+  keys: Array<string>;
 }

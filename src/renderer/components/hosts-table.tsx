@@ -2,6 +2,8 @@ import React, { useMemo, useState } from "react";
 import { useAppSelector } from "../state/hooks";
 import { chunk, debounce } from "lodash";
 import { Host } from "../../global";
+import Pill from "./pill";
+import Textbox from "./textbox";
 
 const renderRow = (host: Host) => {
   return (
@@ -10,13 +12,7 @@ const renderRow = (host: Host) => {
         <p className="text-gray-900 whitespace-no-wrap">{host.id}</p>
       </td>
       <td className="w-1/3 px-4 py-4 border-b border-gray-200 bg-white text-sm">
-        <span className="relative inline-block px-3 py-1 font-semibold text-green-900 leading-tight">
-          <span
-            aria-hidden
-            className="absolute inset-0 bg-green-200 opacity-50 rounded-full"
-          ></span>
-          <span className="relative">{host.domain}</span>
-        </span>
+        <Pill colour="green" text={host.domain} />
       </td>
       <td className="w-1/3 px-4 py-4 border-b border-gray-200 bg-white text-sm">
         <p className="text-gray-900 whitespace-no-wrap">{host.ip}</p>
@@ -45,7 +41,7 @@ const renderPagination = (
       className={`w-8 md:flex justify-center items-center hidden  cursor-pointer leading-5 transition duration-150 ease-in  rounded-full ${
         selectedPage === number ? "bg-green-500 text-white" : ""
       }`}
-      onClick={() => onPageChanged(number)}
+      onClick={() => (number ? onPageChanged(number) : null)}
     >
       {number || "..."}
     </div>
@@ -143,8 +139,6 @@ const header = (() => {
   );
 })();
 
-const search = (() => {})();
-
 export default function HostsTable() {
   const { hosts } = useAppSelector((state) => state.host);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -208,7 +202,8 @@ export default function HostsTable() {
               <path d="M10 4a6 6 0 100 12 6 6 0 000-12zm-8 6a8 8 0 1114.32 4.906l5.387 5.387a1 1 0 01-1.414 1.414l-5.387-5.387A8 8 0 012 10z"></path>
             </svg>
           </span>
-          <input
+
+          <Textbox
             placeholder="Search"
             onChange={(evt) => {
               searchForText(evt.target.value);
