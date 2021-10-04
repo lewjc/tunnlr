@@ -16,9 +16,15 @@ ipcMain.on("global", (evt) => {
 	evt.returnValue = JSON.stringify(globalShare);
 });
 
+let window: BrowserWindow | null = null;
+
+export const getWindow = () => {
+	return window;
+};
+
 function createWindow() {
 	// Create the browser window.
-	let win = new BrowserWindow({
+	window = new BrowserWindow({
 		width: 1200,
 		height: 600,
 		webPreferences: {
@@ -28,10 +34,10 @@ function createWindow() {
 	});
 
 	// and load the index.html of the app.
-	win.loadFile("index.html");
+	window.loadFile("index.html");
 
 	if (process.env.NODE_ENV === "development") {
-		win.webContents.openDevTools();
+		window.webContents.openDevTools();
 	}
 }
 

@@ -43,7 +43,10 @@ export default function StartTunnelModal({ tunnel, disabled }: StartTunnelModalP
 				host,
 			};
 			startTunnel(dispatch, share, tunnel, startTunnelConfig);
-			history.push("/tunnels/console");
+			history.push({
+				pathname: "/tunnels/console",
+				state: { activeId: tunnel.id },
+			});
 		}
 	};
 

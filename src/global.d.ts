@@ -66,7 +66,17 @@ export interface SpawnedTunnel {
 	tunnel: Tunnel;
 	config: StartTunnelConfig;
 	processes: ChildProcessWithoutNullStreams[];
-	messages?: string[];
+	messages: TunnelMessageContents[];
+}
+
+export interface TunnelMessageContents {
+	contents: string;
+	isError: boolean;
+}
+
+export interface TunnelMessage {
+	message: TunnelMessageContents;
+	tunnelId: string;
 }
 
 // Type Guards

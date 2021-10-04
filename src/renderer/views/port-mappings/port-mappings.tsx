@@ -77,7 +77,7 @@ export default function PortMappings() {
 							configuration's more definable.
 						</h3>
 
-						<span className="w-1/3">
+						<span className="ml-5 w-1/3 self-end">
 							<AddPortMappingModal />
 						</span>
 					</div>

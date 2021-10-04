@@ -1,15 +1,20 @@
 import React, { MouseEventHandler, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Tunnel } from "../../../global";
 import { useAppSelector } from "../../state/hooks";
 import BaseView from "../base-view";
+import TabContent from "./tab-content";
 
-interface TunnelConsoleProps {
-	activeTunnel?: Tunnel;
-}
-
-export default function TunnelConsole({ activeTunnel }: TunnelConsoleProps) {
+export default function TunnelConsole() {
+	const location = useLocation<{
+		activeId: string;
+	}>();
 	const activeTunnels = useAppSelector((state) => state.tunnelConfig.activeTunnels);
-	const [activeTab, setActiveTab] = useState(activeTunnel?.id ?? "");
+	const [activeTab, setActiveTab] = useState(location.state?.activeId ?? "");
+	const activeTunnel = useMemo(
+		() => activeTunnels.find((x) => x.tunnel.id === activeTab),
+		[activeTunnels, activeTab]
+	);
 
 	const tabs = useMemo(() => {
 		if (activeTunnels.length > 0) {
@@ -40,30 +45,14 @@ export default function TunnelConsole({ activeTunnel }: TunnelConsoleProps) {
 			{...tabs}
 		</ul>
 	);
-
-	const content = (
-		<div className="bg-gray-100">
-			<div id="first" className="p-4">
-				First tab
-			</div>
-			<div id="second" className="hidden p-4">
-				Second tab
-			</div>
-			<div id="third" className="hidden p-4">
-				Third tab
-			</div>
-			<div id="fourth" className="hidden p-4">
-				Fourth tab
-			</div>
-		</div>
-	);
-
+	console.log(activeTunnel);
+	console.log(activeTab);
 	return (
 		<BaseView title="Tunnel Console">
 			{activeTunnels.length ? (
 				<div className="border-gray-300 w-full border rounded mx-auto mt-4 bg-gray-100">
 					{tabList}
-					{content}
+					{!!activeTunnel && <TabContent tunnel={activeTunnel} />}
 				</div>
 			) : (
 				<h4>No active tunnels</h4>

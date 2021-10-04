@@ -1,6 +1,7 @@
 import { IpcMain, ipcMain, IpcMainEvent } from "electron";
 import { readFileSync, mkdirSync, existsSync, writeFile } from "fs";
 import { normalize, join } from "path";
+import { getWindow } from "../../main";
 import {
 	ServiceFunctionDefinitions,
 	ServiceFunctionEvents,
@@ -36,11 +37,17 @@ const getHosts = async (evt: IpcMainEvent, path: string) => {
 			const line = _ref[i];
 			const md = /(\d+\.\d+\.\d+\.\d+)\s+(.+)/.exec(line);
 			if (md) {
-				systemHosts.push({
-					ip: md[1],
-					domain: md[2],
-					id: ++id,
-				});
+				const [, ip, host] = md;
+				console.log(ip);
+				console.log(host);
+				const splitHosts = host.split(" ");
+				for (const splitHost of splitHosts) {
+					systemHosts.push({
+						ip,
+						domain: splitHost,
+						id: ++id,
+					});
+				}
 			}
 		}
 

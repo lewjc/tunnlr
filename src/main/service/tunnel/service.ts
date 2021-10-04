@@ -15,6 +15,7 @@ import {
 import { dataUtils } from "../../utils";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { getSSHPortString } from "../../utils/tunnel";
+import { getWindow } from "../../main";
 
 export const PREFIX = "service-tunnel";
 
@@ -103,7 +104,7 @@ const startTunnel = async (
 			if (startTunnelConfig.splitPorts) {
 				sshPortStrings.forEach((portStrings) => {
 					const child = spawnProcess(startTunnelConfig.host.domain, [...portStrings.str]);
-					registerChildEvents(child, portStrings.port);
+					registerChildEvents(child, tunnel.id, portStrings.port);
 					processes.push(child);
 				});
 			} else {
@@ -112,7 +113,7 @@ const startTunnel = async (
 					.reduce((curr, next) => [...curr, ...next], []);
 
 				const child = spawnProcess(startTunnelConfig.host.domain, [...params]);
-				registerChildEvents(child, "process");
+				registerChildEvents(child, tunnel.id, "process");
 				processes.push(child);
 			}
 
@@ -129,6 +130,7 @@ const startTunnel = async (
 						tunnel: storedTunnel,
 						processes,
 						config: startTunnelConfig,
+						messages: [],
 					};
 					evt.reply(startTunnelEvents.response, {
 						...activeTunnels[tunnel.id],
@@ -149,7 +151,6 @@ const startTunnel = async (
 		}
 	} catch (error) {
 		console.error(error);
-		// delete activeTunnels[tunnel.id];
 		evt.reply(startTunnelEvents.response, {
 			error: true,
 			message: "An unexpected error occured.",
@@ -177,7 +178,6 @@ export const ensureTunnelsAreStopped = () => {
 	const tunnelConfig = readTunnelConfigFromFile();
 
 	if (tunnelConfig) {
-		console.log("Ensuring they are stopped");
 		tunnelConfig.tunnels.forEach((tunnel) => {
 			markTunnelStopped(tunnel);
 		});
@@ -191,12 +191,32 @@ const spawnProcess = (remoteHost: string, sshPortString: string[]) => {
 	return child;
 };
 
-const registerChildEvents = (process: ChildProcessWithoutNullStreams, owner?: string) => {
+const registerChildEvents = (
+	process: ChildProcessWithoutNullStreams,
+	tunnelId: string,
+	owner?: string
+) => {
 	process.stdout.on("data", (data) => {
-		console.log(`[${owner}] [STDOUT] => ${data}`);
+		const message = `[${owner}] [STDOUT] => ${data}`;
+		console.log(message);
+		getWindow()?.webContents.send("active-tunnel-message", {
+			message: {
+				contents: message,
+				isError: false,
+			},
+			tunnelId,
+		});
 	});
 	process.stderr.on("data", (data) => {
-		console.log(`[${owner}] [ERROR]=> ${data}`);
+		const message = `[${owner}] [ERROR] => ${data}`;
+		console.error(message);
+		getWindow()?.webContents.send("active-tunnel-message", {
+			message: {
+				contents: message,
+				isError: true,
+			},
+			tunnelId,
+		});
 	});
 };
 
