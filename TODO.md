@@ -4,25 +4,19 @@ System:
 
 Hosts:
 
-- List of hosts
-- Allow Adding own hosts
+[x] List of hosts
+[] Allow Adding own hosts
 
-Service Mappings:
+Port Mappings:
 
-- Map name to a port
-- Add new services
+[] Map name to a port
+[] Allow Multiple
 
 Configuration:
 
-- Show config options
+[] Show config options
 
 Tunnels:
 
-Create a tunnel config:
-
-Consits of:
-
-- A host
-- service Mappings
-
-- Pre-steps (Certificate fetching.), Custom Scripts.
+[] Create a tunnel config:
+Consits of: - A host - service Mappings - Pre-steps (Certificate fetching.), Custom Scripts.
