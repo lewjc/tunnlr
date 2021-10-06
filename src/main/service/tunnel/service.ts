@@ -1,16 +1,15 @@
 import { IpcMain, ipcMain, IpcMainEvent } from "electron";
 import { readFileSync, existsSync, writeFileSync } from "fs";
 import {
-	PortMapping,
-	SpawnedTunnel,
-	StartTunnelConfig,
-	Tunnel,
-	TunnelConfig,
+  SpawnedTunnel,
+  StartTunnelConfig,
+  Tunnel,
+  TunnelConfig,
 } from "../../../global";
 import {
-	ServiceFunctionDefinitions,
-	ServiceFunctionEvents,
-	ServiceFunctions,
+  ServiceFunctionDefinitions,
+  ServiceFunctionEvents,
+  ServiceFunctions,
 } from "../../types/app-types";
 import { dataUtils } from "../../utils";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
@@ -22,231 +21,253 @@ export const PREFIX = "service-tunnel";
 const tunnlrTunnelsFile = dataUtils.getTunnlrTunnelFile();
 
 interface ActiveTunnels {
-	[tunnelId: string]: SpawnedTunnel;
+  [tunnelId: string]: SpawnedTunnel;
 }
 
 export const activeTunnels: ActiveTunnels = {};
 
 const writeTunnelConfigToFile = (system: TunnelConfig) => {
-	writeFileSync(tunnlrTunnelsFile, JSON.stringify(system), "utf-8");
+  writeFileSync(tunnlrTunnelsFile, JSON.stringify(system), "utf-8");
 };
 
 const readTunnelConfigFromFile = (): TunnelConfig | null => {
-	if (!existsSync(tunnlrTunnelsFile)) {
-		const defaultSystem: TunnelConfig = { tunnels: [] };
-		writeTunnelConfigToFile(defaultSystem);
-		return defaultSystem;
-	} else {
-		try {
-			const systemConfig = readFileSync(tunnlrTunnelsFile, {
-				encoding: "utf-8",
-			});
-			return JSON.parse(systemConfig);
-		} catch (err) {
-			console.error(err);
-			return null;
-		}
-	}
+  if (!existsSync(tunnlrTunnelsFile)) {
+    const defaultSystem: TunnelConfig = { tunnels: [] };
+    writeTunnelConfigToFile(defaultSystem);
+    return defaultSystem;
+  } else {
+    try {
+      const systemConfig = readFileSync(tunnlrTunnelsFile, {
+        encoding: "utf-8",
+      });
+      return JSON.parse(systemConfig);
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
 };
 
 const getTunnelConfigEvents = {
-	send: `${PREFIX}-getTunnelConfig`,
-	response: `${PREFIX}-getTunnelConfig-response`,
+  send: `${PREFIX}-getTunnelConfig`,
+  response: `${PREFIX}-getTunnelConfig-response`,
 };
 
 const getTunnelConfig = async (evt: IpcMainEvent) => {
-	const tunnelConfFromFile: TunnelConfig | null = readTunnelConfigFromFile();
-	if (tunnelConfFromFile) {
-		evt.reply(getTunnelConfigEvents.response, tunnelConfFromFile);
-	} else {
-		evt.reply(getTunnelConfigEvents.response, { error: true });
-	}
+  const tunnelConfFromFile: TunnelConfig | null = readTunnelConfigFromFile();
+  if (tunnelConfFromFile) {
+    evt.reply(getTunnelConfigEvents.response, tunnelConfFromFile);
+  } else {
+    evt.reply(getTunnelConfigEvents.response, { error: true });
+  }
 };
 
 const addTunnelEvents = {
-	send: `${PREFIX}-addTunnel`,
-	response: `${PREFIX}-addTunnel-response`,
+  send: `${PREFIX}-addTunnel`,
+  response: `${PREFIX}-addTunnel-response`,
 };
 
 const addTunnel = async (evt: IpcMainEvent, tunnel: Tunnel) => {
-	const tunnelConfig: TunnelConfig | null = readTunnelConfigFromFile();
-	try {
-		if (tunnelConfig) {
-			tunnelConfig.tunnels = tunnelConfig?.tunnels.concat(tunnel);
-			writeTunnelConfigToFile(tunnelConfig);
-			evt.reply(addTunnelEvents.response, tunnel);
-		}
-	} catch (err) {
-		evt.reply(addTunnelEvents.response, { error: true, message: "An unexpected error occured." });
-	}
+  const tunnelConfig: TunnelConfig | null = readTunnelConfigFromFile();
+  try {
+    if (tunnelConfig) {
+      tunnelConfig.tunnels = tunnelConfig?.tunnels.concat(tunnel);
+      writeTunnelConfigToFile(tunnelConfig);
+      evt.reply(addTunnelEvents.response, tunnel);
+    }
+  } catch (err) {
+    evt.reply(addTunnelEvents.response, {
+      error: true,
+      message: "An unexpected error occured.",
+    });
+  }
 };
 
 const startTunnelEvents = {
-	send: `${PREFIX}-startTunnel`,
-	response: `${PREFIX}-startTunnel-response`,
+  send: `${PREFIX}-startTunnel`,
+  response: `${PREFIX}-startTunnel-response`,
 };
 
 // All std error and std out need to be sent out. Maybe we can use LazyLog for the terminal?
 const startTunnel = async (
-	evt: IpcMainEvent,
-	tunnel: Tunnel,
-	startTunnelConfig: StartTunnelConfig
+  evt: IpcMainEvent,
+  tunnel: Tunnel,
+  startTunnelConfig: StartTunnelConfig
 ) => {
-	try {
-		if (activeTunnels[tunnel.id]) {
-			evt.reply(startTunnelEvents.response, { error: true, message: "Tunnel is already running." });
-		} else {
-			const sshPortStrings = tunnel.ports.map((port) => ({
-				str: getSSHPortString(port.port),
-				port: port.selectedLabel,
-			}));
-			const processes: ChildProcessWithoutNullStreams[] = [];
-			if (startTunnelConfig.splitPorts) {
-				sshPortStrings.forEach((portStrings) => {
-					const child = spawnProcess(startTunnelConfig.host.domain, [...portStrings.str]);
-					registerChildEvents(child, tunnel.id, portStrings.port);
-					processes.push(child);
-				});
-			} else {
-				const params = sshPortStrings
-					.map((x) => x.str)
-					.reduce((curr, next) => [...curr, ...next], []);
+  try {
+    if (activeTunnels[tunnel.id]) {
+      evt.reply(startTunnelEvents.response, {
+        error: true,
+        message: "Tunnel is already running.",
+      });
+    } else {
+      const sshPortStrings = tunnel.ports.map((port) => ({
+        str: getSSHPortString(port.port),
+        port: port.selectedLabel,
+      }));
+      const processes: ChildProcessWithoutNullStreams[] = [];
+      if (startTunnelConfig.splitPorts) {
+        sshPortStrings.forEach((portStrings) => {
+          const child = spawnProcess(startTunnelConfig.host.domain, [
+            ...portStrings.str,
+          ]);
+          registerChildEvents(child, tunnel.id, portStrings.port);
+          processes.push(child);
+        });
+      } else {
+        const params = sshPortStrings
+          .map((x) => x.str)
+          .reduce((curr, next) => [...curr, ...next], []);
 
-				const child = spawnProcess(startTunnelConfig.host.domain, [...params]);
-				registerChildEvents(child, tunnel.id, "process");
-				processes.push(child);
-			}
+        const child = spawnProcess(startTunnelConfig.host.domain, [...params]);
+        registerChildEvents(child, tunnel.id, "process");
+        processes.push(child);
+      }
 
-			const tunnelConfig = readTunnelConfigFromFile();
+      const tunnelConfig = readTunnelConfigFromFile();
 
-			if (tunnelConfig) {
-				const storedTunnel = tunnelConfig.tunnels.find(
-					(storedTunnel) => storedTunnel.id === tunnel.id
-				);
-				if (storedTunnel) {
-					markTunnelStarted(storedTunnel);
-					writeTunnelConfigToFile(tunnelConfig);
-					activeTunnels[tunnel.id] = {
-						tunnel: storedTunnel,
-						processes,
-						config: startTunnelConfig,
-						messages: [],
-					};
-					evt.reply(startTunnelEvents.response, {
-						...activeTunnels[tunnel.id],
-						processes: [],
-					});
-				} else {
-					evt.reply(startTunnelEvents.response, {
-						error: true,
-						message: "An unexpected error occured.",
-					});
-				}
-			} else {
-				evt.reply(startTunnelEvents.response, {
-					error: true,
-					message: "An unexpected error occured.",
-				});
-			}
-		}
-	} catch (error) {
-		console.error(error);
-		evt.reply(startTunnelEvents.response, {
-			error: true,
-			message: "An unexpected error occured.",
-		});
-	}
+      if (tunnelConfig) {
+        const storedTunnel = tunnelConfig.tunnels.find(
+          (storedTunnel) => storedTunnel.id === tunnel.id
+        );
+        if (storedTunnel) {
+          markTunnelStarted(storedTunnel);
+          writeTunnelConfigToFile(tunnelConfig);
+          activeTunnels[tunnel.id] = {
+            tunnel: storedTunnel,
+            processes,
+            config: startTunnelConfig,
+            messages: [],
+          };
+          console.log(processes);
+          evt.reply(startTunnelEvents.response, {
+            ...activeTunnels[tunnel.id],
+            processes: [],
+          });
+        } else {
+          console.error("Unable to find tunnel in tunnel config");
+          evt.reply(startTunnelEvents.response, {
+            error: true,
+            message: "An unexpected error occured.",
+          });
+        }
+      } else {
+        console.error("tunnel config not present");
+        evt.reply(startTunnelEvents.response, {
+          error: true,
+          message: "An unexpected error occured.",
+        });
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    evt.reply(startTunnelEvents.response, {
+      error: true,
+      message: "An unexpected error occured.",
+    });
+  }
 };
 
 const markTunnelStarted = (tunnel: Tunnel) => {
-	tunnel.enabled = true;
-	tunnel.ports = tunnel.ports.map((port) => {
-		port.running = true;
-		return port;
-	});
+  tunnel.enabled = true;
+  tunnel.ports = tunnel.ports.map((port) => {
+    port.running = true;
+    return port;
+  });
 };
 
 const markTunnelStopped = (tunnel: Tunnel) => {
-	tunnel.enabled = false;
-	tunnel.ports = tunnel.ports.map((port) => {
-		port.running = false;
-		return port;
-	});
+  tunnel.enabled = false;
+  tunnel.ports = tunnel.ports.map((port) => {
+    port.running = false;
+    return port;
+  });
 };
 
 export const ensureTunnelsAreStopped = () => {
-	const tunnelConfig = readTunnelConfigFromFile();
+  const tunnelConfig = readTunnelConfigFromFile();
 
-	if (tunnelConfig) {
-		tunnelConfig.tunnels.forEach((tunnel) => {
-			markTunnelStopped(tunnel);
-		});
+  if (tunnelConfig) {
+    tunnelConfig.tunnels.forEach((tunnel) => {
+      markTunnelStopped(tunnel);
+    });
 
-		writeTunnelConfigToFile(tunnelConfig);
-	}
+    writeTunnelConfigToFile(tunnelConfig);
+  }
+
+  Object.values(activeTunnels).forEach((x) => {
+    console.log(x.processes);
+    x.processes.forEach((spawnedProcess) => {
+      if (spawnedProcess.pid) {
+        process.kill(spawnedProcess.pid);
+      }
+    });
+  });
 };
 
 const spawnProcess = (remoteHost: string, sshPortString: string[]) => {
-	const child = spawn(`ssh`, [remoteHost, "-T", ...sshPortString]);
-	return child;
+  const child = spawn(`ssh`, [remoteHost, "-t", "-t", ...sshPortString]);
+  return child;
 };
 
 const registerChildEvents = (
-	process: ChildProcessWithoutNullStreams,
-	tunnelId: string,
-	owner?: string
+  process: ChildProcessWithoutNullStreams,
+  tunnelId: string,
+  owner?: string
 ) => {
-	process.stdout.on("data", (data) => {
-		const message = `[${owner}] [STDOUT] => ${data}`;
-		console.log(message);
-		getWindow()?.webContents.send("active-tunnel-message", {
-			message: {
-				contents: message,
-				isError: false,
-			},
-			tunnelId,
-		});
-	});
-	process.stderr.on("data", (data) => {
-		const message = `[${owner}] [ERROR] => ${data}`;
-		console.error(message);
-		getWindow()?.webContents.send("active-tunnel-message", {
-			message: {
-				contents: message,
-				isError: true,
-			},
-			tunnelId,
-		});
-	});
+  process.stdout.on("data", (data: Buffer) => {
+    if (data.toString("utf-8")) {
+      const message = `[${owner}] [STDOUT] => ${data.toString("utf-8")}`;
+      console.log(message);
+      getWindow()?.webContents.send("active-tunnel-message", {
+        message: {
+          contents: message,
+          isError: false,
+        },
+        tunnelId,
+      });
+    }
+  });
+  process.stderr.on("data", (data) => {
+    const message = `[${owner}] [ERROR] => ${data.toString("utf-8")}`;
+    console.error(message);
+    getWindow()?.webContents.send("active-tunnel-message", {
+      message: {
+        contents: message,
+        isError: true,
+      },
+      tunnelId,
+    });
+  });
 };
 
 export interface TunnelService {
-	definition: ServiceFunctionDefinitions<TunnelFunctionDefinitions>;
-	functions: ServiceFunctions<TunnelFunctions>;
+  definition: ServiceFunctionDefinitions<TunnelFunctionDefinitions>;
+  functions: ServiceFunctions<TunnelFunctions>;
 }
 
 export interface TunnelFunctionDefinitions {
-	getTunnelConfig: ServiceFunctionEvents;
-	addTunnel: ServiceFunctionEvents;
-	startTunnel: ServiceFunctionEvents;
+  getTunnelConfig: ServiceFunctionEvents;
+  addTunnel: ServiceFunctionEvents;
+  startTunnel: ServiceFunctionEvents;
 }
 
 export interface TunnelFunctions {
-	getTunnelConfig: IpcMain;
-	addTunnel: IpcMain;
+  getTunnelConfig: IpcMain;
+  addTunnel: IpcMain;
 }
 
 const service = {
-	definition: {
-		getTunnelConfig: getTunnelConfigEvents,
-		addTunnel: addTunnelEvents,
-		startTunnel: startTunnelEvents,
-	},
-	functions: {
-		getTunnelConfig: ipcMain.on(getTunnelConfigEvents.send, getTunnelConfig),
-		addTunnel: ipcMain.on(addTunnelEvents.send, addTunnel),
-		startTunnel: ipcMain.on(startTunnelEvents.send, startTunnel),
-	},
+  definition: {
+    getTunnelConfig: getTunnelConfigEvents,
+    addTunnel: addTunnelEvents,
+    startTunnel: startTunnelEvents,
+  },
+  functions: {
+    getTunnelConfig: ipcMain.on(getTunnelConfigEvents.send, getTunnelConfig),
+    addTunnel: ipcMain.on(addTunnelEvents.send, addTunnel),
+    startTunnel: ipcMain.on(startTunnelEvents.send, startTunnel),
+  },
 };
 
 export default service;

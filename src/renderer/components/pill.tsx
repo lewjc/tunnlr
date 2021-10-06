@@ -16,7 +16,9 @@ export default function Pill(props: PillProps) {
     >
       <span
         aria-hidden
-        className={`absolute inset-0 bg-${props.colour}-200 opacity-50 rounded-full`}
+        className={`absolute inset-0 ${
+          props.colour === "gray" ? "bg-gray-400" : "bg-green-200"
+        } opacity-50 rounded-full`}
       ></span>
       <span className="relative">{props.text}</span>
     </span>

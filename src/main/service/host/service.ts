@@ -38,8 +38,6 @@ const getHosts = async (evt: IpcMainEvent, path: string) => {
 			const md = /(\d+\.\d+\.\d+\.\d+)\s+(.+)/.exec(line);
 			if (md) {
 				const [, ip, host] = md;
-				console.log(ip);
-				console.log(host);
 				const splitHosts = host.split(" ");
 				for (const splitHost of splitHosts) {
 					systemHosts.push({
