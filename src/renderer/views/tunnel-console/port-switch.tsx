@@ -31,15 +31,17 @@ export default function PortSwitch({
             setIsChecked(evt.target.checked);
             onChange(evt);
           }}
-          className={`toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer ${
-            isChecked ? "border-green-400 right-0 bg-green-600" : ""
+          className={`disabled:pointer-events-none disabled:border-gray-400 disabled:bg-gray-600 toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer ${
+            isChecked && !disabled
+              ? "border-green-400 right-0 bg-green-600"
+              : ""
           }`}
         />
         <label
           htmlFor={`${label}-toggle`}
-          className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer ${
-            isChecked ? "bg-green-400" : "bg-gray-300"
-          }`}
+          className={`toggle-label block overflow-hidden h-6 rounded-full ${
+            !disabled ? "cursor-pointer" : ""
+          } ${isChecked && !disabled ? "bg-green-400" : "bg-gray-300"}`}
         ></label>
       </div>
       <label

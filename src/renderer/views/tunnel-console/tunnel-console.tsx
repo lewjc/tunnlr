@@ -1,9 +1,9 @@
-import React, { MouseEventHandler, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Tunnel } from "../../../global";
 import { useAppSelector } from "../../state/hooks";
 import BaseView from "../base-view";
 import TabContent from "./tab-content";
+import { StatusOnlineIcon } from "@heroicons/react/solid";
 
 export default function TunnelConsole() {
   const location = useLocation<{
@@ -25,6 +25,10 @@ export default function TunnelConsole() {
       const selectedId = activeTab || activeTunnels[0].tunnel.id;
       return activeTunnels.map((spawn) => (
         <li
+          id={spawn.tunnel.id}
+          onClick={(event: React.MouseEvent<HTMLLIElement>) =>
+            setActiveTab(event.currentTarget.id)
+          }
           className={`bg-gray-100 px-4 border-gray-300 rounded-t-lg
 		  text-xs font-semibold text-gray-600 uppercase tracking-wider py-2 mb-px cursor-pointer ${
         selectedId === spawn.tunnel.id
@@ -32,13 +36,17 @@ export default function TunnelConsole() {
           : ""
       }`}
         >
-          <div
-            id={spawn.tunnel.id}
-            onClick={(event: React.MouseEvent<HTMLDivElement>) =>
-              setActiveTab(event.currentTarget.id)
-            }
-          >
-            {spawn.tunnel.title}
+          <div>
+            <span>
+              {spawn.tunnel.title}
+              <StatusOnlineIcon
+                className={`ml-2 inline animate-pulse h-4 w-4 align-top ${
+                  spawn.messages.some((x) => x.isError)
+                    ? "text-red-500"
+                    : "text-green-500"
+                }`}
+              />
+            </span>
           </div>
         </li>
       ));

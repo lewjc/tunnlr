@@ -5,7 +5,7 @@ import services from "./service";
 import { ensureTunnelsAreStopped } from "./service/tunnel/service";
 
 let globalShare: GlobalShare = {
-	services,
+  services,
 };
 
 global.share = globalShare;
@@ -13,32 +13,34 @@ global.share = globalShare;
 global.share = { ...global.share };
 
 ipcMain.on("global", (evt) => {
-	evt.returnValue = JSON.stringify(globalShare);
+  evt.returnValue = JSON.stringify(globalShare);
 });
 
 let window: BrowserWindow | null = null;
 
 export const getWindow = () => {
-	return window;
+  return window;
 };
 
 function createWindow() {
-	// Create the browser window.
-	window = new BrowserWindow({
-		width: 1200,
-		height: 600,
-		webPreferences: {
-			nodeIntegration: true,
-			contextIsolation: false,
-		},
-	});
+  // Create the browser window.
+  window = new BrowserWindow({
+    width: 1200,
+    height: 600,
+    minWidth: 650,
+    minHeight: 400,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  });
 
-	// and load the index.html of the app.
-	window.loadFile("index.html");
+  // and load the index.html of the app.
+  window.loadFile("index.html");
 
-	if (process.env.NODE_ENV === "development") {
-		window.webContents.openDevTools();
-	}
+  if (process.env.NODE_ENV === "development") {
+    window.webContents.openDevTools();
+  }
 }
 
 // This method will be called when Electron has finished
@@ -50,21 +52,21 @@ app.whenReady().then(createWindow);
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on("window-all-closed", () => {
-	if (process.platform !== "darwin") {
-		console.log("Ensure stopped");
-		app.quit();
-	}
+  if (process.platform !== "darwin") {
+    console.log("Ensure stopped");
+    app.quit();
+  }
 });
 
 app.on("before-quit", () => {
-	ensureTunnelsAreStopped();
+  ensureTunnelsAreStopped();
 });
 
 app.on("activate", () => {
-	// On macOS it's common to re-create a window in the app when the
-	// dock icon is clicked and there are no other windows open.
+  // On macOS it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
 
-	if (BrowserWindow.getAllWindows().length === 0) {
-		createWindow();
-	}
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
 });

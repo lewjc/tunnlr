@@ -91,6 +91,17 @@ export const tunnelsSlice = createSlice({
         ),
       ];
     },
+    stopTunnel: (state, action: PayloadAction<SpawnedTunnel>) => {
+      state.activeTunnels = state.activeTunnels.filter(
+        (x) => x.tunnel.id !== action.payload.tunnel.id
+      );
+      state.tunnelConfig.tunnels = [
+        action.payload.tunnel,
+        ...state.tunnelConfig.tunnels.filter(
+          (x) => x.id !== action.payload.tunnel.id
+        ),
+      ];
+    },
     addMessage: (state, action: PayloadAction<TunnelMessage>) => {
       const activeTunnel = {
         ...state.activeTunnels.find(
@@ -106,15 +117,6 @@ export const tunnelsSlice = createSlice({
           activeTunnel,
         ];
       }
-    },
-    clearFlags: (state) => {
-      state.fetching = false;
-      state.error = true;
-      state.loaded = true;
-      state.starting = false;
-      state.updating = false;
-      state.started = false;
-      state.starting = false;
     },
     hasError: (state) => {
       state.fetching = false;
@@ -138,7 +140,7 @@ export const {
   hasError,
   addStartedTunnel,
   addMessage,
-  clearFlags,
+  stopTunnel,
 } = tunnelsSlice.actions;
 
 // State Funcs
@@ -194,6 +196,33 @@ export const startTunnel = async (
           reject();
         } else {
           dispatch(addStartedTunnel(response));
+          resolve(true);
+        }
+      });
+    } catch (e) {
+      console.error(e);
+      dispatch(hasError());
+      reject();
+    }
+  });
+};
+
+export const killTunnel = async (
+  dispatch: AppDispatch,
+  globalShare: GlobalShare,
+  tunnel: Tunnel
+) => {
+  const { definition } = globalShare.services.tunnels;
+  return new Promise((resolve, reject) => {
+    dispatch(startStarting());
+    try {
+      ipcRenderer.send(definition.stopTunnel.send, tunnel);
+      ipcRenderer.once(definition.stopTunnel.response, (event, response) => {
+        if (response.error) {
+          dispatch(hasError);
+          reject();
+        } else {
+          dispatch(stopTunnel(response));
           resolve(true);
         }
       });
