@@ -197,14 +197,14 @@ const stopTunnel = async (evt: IpcMainEvent, tunnel: Tunnel) => {
   const activeTunnel = activeTunnels[tunnel.id];
   if (activeTunnel) {
     activeTunnel.processes.forEach(killProcess);
-    markTunnelStopped(activeTunnel.tunnel);
+    markTunnelStopped(tunnel);
     const tunnelConfig = readTunnelConfigFromFile();
     if (tunnelConfig) {
       const storedTunnelIndex = tunnelConfig.tunnels.findIndex(
         (st) => st.id === tunnel.id
       );
-      if (storedTunnelIndex) {
-        tunnelConfig.tunnels[storedTunnelIndex] = activeTunnel.tunnel;
+      if (storedTunnelIndex !== -1) {
+        tunnelConfig.tunnels[storedTunnelIndex] = tunnel;
         writeTunnelConfigToFile(tunnelConfig);
         delete activeTunnels[tunnel.id];
         evt.reply(stopTunnelEvents.response, { stopped: true, tunnel });
@@ -237,7 +237,6 @@ const stopPort = async (
     if (portProcessToStopIndex) {
       killProcess(activeTunnel.processes[portProcessToStopIndex]);
       activeTunnel.processes.splice(portProcessToStopIndex, 1);
-
       const portToStop = tunnel.ports.find((x) => x.port === Number(processId));
       if (portToStop) {
         portToStop.running = false;
@@ -281,6 +280,11 @@ const killProcess = (spawnedProcess: SpawnedProcess) => {
       process.kill(spawnedProcess.process.pid);
     } catch (error) {
       console.error(error);
+      try {
+      } catch (error) {
+        console.error(error);
+        spawnedProcess.process.kill();
+      }
     }
   }
 };

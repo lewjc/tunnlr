@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import Select from "../../components/form/select";
 import FormLabel from "../../components/form/label";
 import Checkbox from "../../components/form/checkbox";
-import { clearFlags, startTunnel } from "../../state/slices/tunnels";
+import { startTunnel } from "../../state/slices/tunnels";
 import { useHistory } from "react-router";
 
 export interface StartTunnelModalProps {

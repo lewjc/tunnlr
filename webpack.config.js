@@ -10,6 +10,7 @@ module.exports = [
     mode: "development",
     entry: "./src/main/main.ts",
     target: "electron-main",
+    devtool: "source-map",
     module: {
       rules: [
         {

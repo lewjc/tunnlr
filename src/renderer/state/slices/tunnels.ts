@@ -22,6 +22,7 @@ interface TunnelsState {
   started: boolean;
   updating: boolean;
   starting: boolean;
+  killing: boolean;
   activeTunnels: SpawnedTunnel[];
 }
 
@@ -43,6 +44,7 @@ const initialState: TunnelsState = {
   adding: false,
   starting: false,
   updating: false,
+  killing: false,
 };
 
 export const tunnelsSlice = createSlice({
@@ -61,6 +63,10 @@ export const tunnelsSlice = createSlice({
       state.starting = true;
       state.error = false;
       state.started = false;
+    },
+    startKilling: (state) => {
+      state.killing = true;
+      state.error = false;
     },
     startUpdating: (state) => {
       state.updating = true;
@@ -141,6 +147,7 @@ export const {
   addStartedTunnel,
   addMessage,
   stopTunnel,
+  startKilling,
 } = tunnelsSlice.actions;
 
 // State Funcs
@@ -214,7 +221,7 @@ export const killTunnel = async (
 ) => {
   const { definition } = globalShare.services.tunnels;
   return new Promise((resolve, reject) => {
-    dispatch(startStarting());
+    dispatch(startKilling());
     try {
       ipcRenderer.send(definition.stopTunnel.send, tunnel);
       ipcRenderer.once(definition.stopTunnel.response, (event, response) => {
