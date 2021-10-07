@@ -19,7 +19,7 @@ export interface SelectItem<T> {
 export default function Select(props: SelectProps) {
   return (
     <select
-      className={`w-full ${props.className}`}
+      className={`w-full text-xs ${props.className}`}
       {...props.formRegistration}
       onSelect={props.onSelect}
       onChange={props.onChange}

@@ -1,9 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { AppDispatch, RootState } from "..";
+import type { AppDispatch } from "..";
 import { GlobalShare, HostConfig } from "../../../global";
-import { IpcMain } from "electron";
-import { Services } from "../../../main/service";
-import { HostService } from "../../../main/service/host";
 const { ipcRenderer } = window.require("electron");
 
 // Define a type for the slice state

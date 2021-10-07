@@ -199,7 +199,11 @@ export const ensureTunnelsAreStopped = () => {
     console.log(x.processes);
     x.processes.forEach((spawnedProcess) => {
       if (spawnedProcess.pid) {
-        process.kill(spawnedProcess.pid);
+        try {
+          process.kill(spawnedProcess.pid);
+        } catch (error) {
+          console.error(error);
+        }
       }
     });
   });
