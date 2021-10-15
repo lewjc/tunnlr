@@ -1,14 +1,16 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import type { AppDispatch } from "..";
+import type { AppDispatch, RootState } from "..";
 import {
   GlobalShare,
+  PortMapping,
   SpawnedTunnel,
   StartTunnelConfig,
   Tunnel,
   TunnelConfig,
   TunnelMessage,
+  TunnelPortMapping,
 } from "../../../global";
-import { useAppDispatch } from "../hooks";
+import { useAppDispatch, useAppSelector } from "../hooks";
 const { ipcRenderer } = window.require("electron");
 
 // Define a type for the slice state
@@ -108,6 +110,26 @@ export const tunnelsSlice = createSlice({
         ),
       ];
     },
+    stopPort: (state, action: PayloadAction<SpawnedTunnel>) => {
+      state.activeTunnels = [
+        ...state.activeTunnels.map((x) => {
+          if (x.tunnel.id === action.payload.tunnel.id) {
+            return {
+              ...action.payload,
+              messages: x.messages,
+            };
+          }
+          return x;
+        }),
+      ];
+
+      state.tunnelConfig.tunnels = [
+        action.payload.tunnel,
+        ...state.tunnelConfig.tunnels.filter(
+          (x) => x.id !== action.payload.tunnel.id
+        ),
+      ];
+    },
     addMessage: (state, action: PayloadAction<TunnelMessage>) => {
       const activeTunnel = {
         ...state.activeTunnels.find(
@@ -148,6 +170,7 @@ export const {
   addMessage,
   stopTunnel,
   startKilling,
+  stopPort,
 } = tunnelsSlice.actions;
 
 // State Funcs
@@ -240,5 +263,42 @@ export const killTunnel = async (
     }
   });
 };
+
+export const killPort = async (
+  dispatch: AppDispatch,
+  globalShare: GlobalShare,
+  tunnel: Tunnel,
+  port: TunnelPortMapping
+) => {
+  const { definition } = globalShare.services.tunnels;
+  return new Promise((resolve, reject) => {
+    dispatch(startKilling());
+    try {
+      ipcRenderer.send(
+        definition.stopPort.send,
+        tunnel,
+        `${port.selectedLabel}`
+      );
+      ipcRenderer.once(definition.stopPort.response, (event, response) => {
+        if (response.error) {
+          dispatch(hasError);
+          reject();
+        } else {
+          dispatch(stopPort(response));
+          resolve(true);
+        }
+      });
+    } catch (e) {
+      console.error(e);
+      dispatch(hasError());
+      reject();
+    }
+  });
+};
+
+export const selectActiveTunnelPorts = () =>
+  useAppSelector((state: RootState) =>
+    state.tunnelConfig.activeTunnels.map((x) => x.tunnel.ports)
+  );
 
 export default tunnelsSlice.reducer;

@@ -7,6 +7,7 @@ import {
   StartTunnelConfig,
   Tunnel,
   TunnelConfig,
+  TunnelPortMapping,
 } from "../../../global";
 import {
   ServiceFunctionDefinitions,
@@ -18,7 +19,7 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { getSSHPortString } from "../../utils/tunnel";
 import { getWindow } from "../../main";
 
-const readline = require("readline");
+import readline from "readline";
 
 export const PREFIX = "service-tunnel";
 
@@ -114,8 +115,17 @@ const startTunnel = async (
           const child = spawnProcess(startTunnelConfig.host.domain, [
             ...portStrings.str,
           ]);
-          registerChildEvents(child, tunnel.id, portStrings.port);
-          processes.push({ process: child, id: portStrings.port });
+          const { readErr, readStdout } = registerChildEvents(
+            child,
+            tunnel.id,
+            portStrings.port
+          );
+          processes.push({
+            process: child,
+            id: portStrings.port,
+            readErr,
+            readStdout,
+          });
         });
       } else {
         const params = sshPortStrings
@@ -123,8 +133,12 @@ const startTunnel = async (
           .reduce((curr, next) => [...curr, ...next], []);
 
         const child = spawnProcess(startTunnelConfig.host.domain, [...params]);
-        registerChildEvents(child, tunnel.id, "tunnel");
-        processes.push({ process: child, id: tunnel.id });
+        const { readErr, readStdout } = registerChildEvents(
+          child,
+          tunnel.id,
+          "tunnel"
+        );
+        processes.push({ process: child, id: tunnel.id, readErr, readStdout });
       }
 
       const tunnelConfig = readTunnelConfigFromFile();
@@ -234,18 +248,23 @@ const stopPort = async (
     const portProcessToStopIndex = activeTunnel.processes.findIndex(
       (x) => x.id === processId
     );
-    if (portProcessToStopIndex) {
-      killProcess(activeTunnel.processes[portProcessToStopIndex]);
+    if (portProcessToStopIndex !== -1) {
+      const process = activeTunnel.processes[portProcessToStopIndex];
+      killProcess(process);
       activeTunnel.processes.splice(portProcessToStopIndex, 1);
-      const portToStop = tunnel.ports.find((x) => x.port === Number(processId));
-      if (portToStop) {
-        portToStop.running = false;
-        evt.reply(stopPortEvents.response, {
-          tunnel,
-        });
-      } else {
-        // Could not find port to stop
-      }
+      activeTunnel.tunnel.ports = activeTunnel.tunnel.ports.map((x) => {
+        if (x.selectedLabel === processId) {
+          x.running = false;
+        }
+        return x;
+      });
+      sendTunnelMessage(processId, "Stopping Port", tunnel.id, false);
+      evt.reply(stopPortEvents.response, {
+        ...activeTunnel,
+        processes: activeTunnel.processes.map((x) => ({
+          id: x.id,
+        })),
+      });
     } else {
       // could not find port process
     }
@@ -254,8 +273,65 @@ const stopPort = async (
   }
 };
 
-const startPort = async (evt: IpcMainEvent, tunnel: Tunnel, port: string) => {
+const startPortEvents = {
+  send: `${PREFIX}-startPort`,
+  response: `${PREFIX}-startPort-response`,
+};
+
+const startPort = async (
+  evt: IpcMainEvent,
+  tunnel: Tunnel,
+  domain: string,
+  port: TunnelPortMapping
+) => {
   // Here we need to spawn a new process and append to the active tunnels
+  const activeTunnel = activeTunnels[tunnel.id];
+  if (activeTunnel) {
+    const sshPortStrings = [
+      {
+        str: getSSHPortString(port.port),
+        port: port.selectedLabel,
+      },
+    ];
+
+    const params = sshPortStrings
+      .map((x) => x.str)
+      .reduce((curr, next) => [...curr, ...next], []);
+
+    const child = spawnProcess(domain, [...params]);
+    const { readErr, readStdout } = registerChildEvents(
+      child,
+      tunnel.id,
+      "tunnel"
+    );
+    activeTunnel.processes.push({
+      process: child,
+      id: tunnel.id,
+      readErr,
+      readStdout,
+    });
+    activeTunnel.tunnel.ports = activeTunnel.tunnel.ports.map((x) => {
+      if (x.selectedLabel === port.selectedLabel) {
+        x.running = true;
+        sendTunnelMessage(
+          port.selectedLabel,
+          "Starting Port",
+          tunnel.id,
+          false
+        );
+      }
+      return x;
+    });
+
+    evt.reply(startPortEvents.response, {
+      ...activeTunnel,
+      processes: activeTunnel.processes.map((x) => ({
+        id: x.id,
+      })),
+    });
+  } else {
+    // Tunnel not active
+  }
 };
 
 export const ensureTunnelsAreStopped = () => {
@@ -275,15 +351,18 @@ export const ensureTunnelsAreStopped = () => {
 };
 
 const killProcess = (spawnedProcess: SpawnedProcess) => {
+  spawnedProcess.readErr?.close();
+  spawnedProcess.readStdout?.close();
+
   if (spawnedProcess.process?.pid) {
     try {
       process.kill(spawnedProcess.process.pid);
     } catch (error) {
       console.error(error);
       try {
-      } catch (error) {
-        console.error(error);
         spawnedProcess.process.kill();
+      } catch (err) {
+        console.error(err);
       }
     }
   }
@@ -296,35 +375,52 @@ const spawnProcess = (remoteHost: string, sshPortString: string[]) => {
 const registerChildEvents = (
   process: ChildProcessWithoutNullStreams,
   tunnelId: string,
-  owner?: string
+  owner: string
 ) => {
   const readStdout = readline.createInterface({ input: process.stdout });
   readStdout.on("line", (line: string) => {
     if (line) {
-      const message = `[${owner}] [STDOUT] => ${line}`;
-      getWindow()?.webContents.send("active-tunnel-message", {
-        message: {
-          contents: message,
-          isError: false,
-        },
-        tunnelId,
-      });
+      sendTunnelMessage(owner, line, tunnelId, false);
     }
   });
 
   const readErr = readline.createInterface({ input: process.stderr });
   readErr.on("line", (line: string) => {
     if (line) {
-      const message = `[${owner}] [ERROR] => ${line}`;
-      getWindow()?.webContents.send("active-tunnel-message", {
+      sendTunnelMessage(owner, line, tunnelId, true);
+    }
+  });
+  return {
+    readErr,
+    readStdout,
+  };
+};
+
+const sendTunnelMessage = (
+  owner: string,
+  content: string,
+  tunnelId: string,
+  isError: boolean
+) => {
+  const message = `[${owner}] ${content}`;
+  const window = getWindow();
+  try {
+    if (
+      window &&
+      !window?.isDestroyed() &&
+      !window?.webContents.isDestroyed()
+    ) {
+      window.webContents.send("active-tunnel-message", {
         message: {
           contents: message,
-          isError: true,
+          isError,
         },
         tunnelId,
       });
     }
-  });
+  } catch (err) {
+    console.error("Error sending message");
+  }
 };
 
 export interface TunnelService {
@@ -338,6 +434,7 @@ export interface TunnelFunctionDefinitions {
   startTunnel: ServiceFunctionEvents;
   stopTunnel: ServiceFunctionEvents;
   stopPort: ServiceFunctionEvents;
+  startPort: ServiceFunctionEvents;
 }
 
 export interface TunnelFunctions {
@@ -352,13 +449,15 @@ const service = {
     startTunnel: startTunnelEvents,
     stopTunnel: stopTunnelEvents,
     stopPort: stopPortEvents,
+    startPort: stopPortEvents,
   },
   functions: {
     getTunnelConfig: ipcMain.on(getTunnelConfigEvents.send, getTunnelConfig),
     addTunnel: ipcMain.on(addTunnelEvents.send, addTunnel),
     startTunnel: ipcMain.on(startTunnelEvents.send, startTunnel),
     stopTunnel: ipcMain.on(stopTunnelEvents.send, stopTunnel),
-    stopPort: ipcMain.on(stopTunnelEvents.send, stopPort),
+    stopPort: ipcMain.on(stopPortEvents.send, stopPort),
+    startPort: ipcMain.on(startPortEvents.send, startPort),
   },
 };
 

@@ -1,5 +1,7 @@
 import React, { useMemo } from "react";
 import { SpawnedTunnel } from "../../../global";
+import { useAppDispatch, useAppSelector } from "../../state/hooks";
+import { killPort } from "../../state/slices/tunnels";
 import PortSwitch from "./port-switch";
 import "./tab-content.scss";
 
@@ -8,6 +10,8 @@ interface TabContentProps {
 }
 
 export default function TabContent({ tunnel }: TabContentProps) {
+  const dispatch = useAppDispatch();
+  const { share } = useAppSelector((state) => state.global);
   const messages = tunnel.messages.map((message) => (
     <p className={`p-2 ${message.isError && "text-red-400"}`}>
       {message.contents}
@@ -20,13 +24,13 @@ export default function TabContent({ tunnel }: TabContentProps) {
         <div className={`w-1/5 ${idx > 4 ? "mt-3" : ""}`}>
           <PortSwitch
             label={`${port.selectedLabel.toUpperCase()}`}
-            isInitiallySelected={true}
+            isInitiallySelected={port.running}
             disabled={!tunnel.config.splitPorts}
             onChange={(evt) => {
               if (evt.target.checked) {
                 console.log("Turn Port On");
               } else {
-                console.log("Turn Port Off");
+                killPort(dispatch, share, tunnel.tunnel, port);
               }
             }}
           />

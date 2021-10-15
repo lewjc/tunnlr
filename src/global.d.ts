@@ -2,6 +2,7 @@ import { ChildProcessWithoutNullStreams } from "child_process";
 import { IpcMain, IpcRenderer } from "electron";
 import { type } from "os";
 import { Services } from "./main/service";
+import { Interface as StreamInterface } from "readline";
 
 export interface GlobalShare {
   services: Services;
@@ -72,6 +73,8 @@ export interface SpawnedTunnel {
 export interface SpawnedProcess {
   process?: ChildProcessWithoutNullStreams;
   id: string;
+  readStdout?: StreamInterface;
+  readErr?: StreamInterface;
 }
 
 export interface TunnelMessageContents {

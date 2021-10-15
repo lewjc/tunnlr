@@ -9,6 +9,7 @@ import { ChipIcon } from "@heroicons/react/solid";
 import CreateNewTunnel from "../tunnels/create-new-tunnel";
 import TunnelConsole from "../tunnel-console/tunnel-console";
 import { useAppSelector } from "../../state/hooks";
+import { selectActiveTunnelPorts } from "../../state/slices/tunnels";
 
 export default function Main(props: any) {
   const { activeTunnels } = useAppSelector((state) => state.tunnelConfig);
@@ -17,11 +18,9 @@ export default function Main(props: any) {
     [activeTunnels]
   );
 
-  const portCount = useMemo(
-    () =>
-      activeTunnels.reduce((curr, next) => curr + next.tunnel.ports.length, 0),
-    [activeTunnels]
-  );
+  const portCount = selectActiveTunnelPorts()
+    .flat()
+    .filter((x) => x.running).length;
 
   return (
     <main>
