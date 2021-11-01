@@ -64,7 +64,7 @@ export default function TunnelConsole() {
         </div>
       ) : (
         <div className="flex flex-col mt-16">
-          <h4 className="py-10 m-auto bg-gray-600 w-1/2 uppercase tracking-wider text-center">
+          <h4 className="py-10 m-auto bg-gray-500 w-1/2 uppercase tracking-wider text-center">
             <span className="text-gray-200 p-3">
               No Active Tunnels Available
             </span>

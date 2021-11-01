@@ -792,6 +792,11 @@ chrome-trace-event@^1.0.2:
   resolved "https://registry.yarnpkg.com/chrome-trace-event/-/chrome-trace-event-1.0.3.tgz#1015eced4741e15d06664a957dbbf50d041e26ac"
   integrity sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==
 
+classnames@^2.2.1:
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.3.1.tgz#dfcfa3891e306ec1dad105d0e88f4417b8535e8e"
+  integrity sha512-OlQdbZ7gLfGarSqxesMesDa5uz7KFbID8Kpq/SxIoNGDqY8lSYs0D+hhtBXhcdB3rcbXArFr7vlHheLk1voeNA==
+
 clean-css@^4.2.3:
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/clean-css/-/clean-css-4.2.3.tgz#507b5de7d97b48ee53d84adb0160ff6216380f78"
@@ -1148,6 +1153,11 @@ detective@^5.2.0:
     acorn-node "^1.6.1"
     defined "^1.0.0"
     minimist "^1.1.1"
+
+devicon-react-svg@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/devicon-react-svg/-/devicon-react-svg-0.2.3.tgz#7960a46d327fe8ca83f955c60d6dcfa3e518408f"
+  integrity sha512-sy81d4yTglUNextq3Q4sUI1LB+gUrgfRzyNG3H3Skg36TQZ/WFlWwXFhgJ+53kZ9vU0kg33tgjHKhI8LX3DDZw==
 
 didyoumean@^1.2.2:
   version "1.2.2"
@@ -2177,6 +2187,16 @@ locate-path@^5.0.0:
   dependencies:
     p-locate "^4.1.0"
 
+lodash.isnumber@3.0.3:
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/lodash.isnumber/-/lodash.isnumber-3.0.3.tgz#3ce76810c5928d03352301ac287317f11c0b1ffc"
+  integrity sha1-POdoEMWSjQM1IwGsKHMX8RwLH/w=
+
+lodash.isstring@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/lodash.isstring/-/lodash.isstring-4.0.1.tgz#d527dfb5456eca7cc9bb95d5daeaf88ba54a5451"
+  integrity sha1-1SfftUVuynzJu5XV2ur4i6VKVFE=
+
 lodash.topath@^4.5.2:
   version "4.5.2"
   resolved "https://registry.yarnpkg.com/lodash.topath/-/lodash.topath-4.5.2.tgz#3616351f3bba61994a0931989660bd03254fd009"
@@ -2500,6 +2520,14 @@ nopt@^5.0.0:
   integrity sha512-Tbj67rffqceeLpcRXrT7vKAN8CwfPeIBgM7E6iBkmKLV7bEMwpGgYLGv0jACUsECaa/vuxP0IjEont6umdMgtQ==
   dependencies:
     abbrev "1"
+
+normalize-css-unit@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/normalize-css-unit/-/normalize-css-unit-1.0.1.tgz#fa8e8b8dff67cfbc4fd31aef3ee8686394245528"
+  integrity sha1-+o6Ljf9nz7xP0xrvPuhoY5QkVSg=
+  dependencies:
+    lodash.isnumber "3.0.3"
+    lodash.isstring "4.0.1"
 
 normalize-package-data@^2.5.0:
   version "2.5.0"
@@ -3166,7 +3194,7 @@ progress@^2.0.3:
   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
   integrity sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==
 
-prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2:
+prop-types@^15.3.0, prop-types@^15.5.8, prop-types@^15.6.1, prop-types@^15.6.2, prop-types@^15.7.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -3234,6 +3262,15 @@ randombytes@^2.1.0:
   integrity sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==
   dependencies:
     safe-buffer "^5.1.0"
+
+react-devicon@^0.1.9:
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/react-devicon/-/react-devicon-0.1.9.tgz#833344b52a6b07d547a25e1d99395f69b6ceec5f"
+  integrity sha1-gzNEtSprB9VHol4dmTlfabbO7F8=
+  dependencies:
+    normalize-css-unit "^1.0.0"
+    prop-types "^15.3.0"
+    react-svg-inline "^2.0.0"
 
 react-dom@^17.0.2:
   version "17.0.2"
@@ -3313,6 +3350,14 @@ react-router@5.2.1:
     react-is "^16.6.0"
     tiny-invariant "^1.0.2"
     tiny-warning "^1.0.0"
+
+react-svg-inline@^2.0.0:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/react-svg-inline/-/react-svg-inline-2.1.1.tgz#532664006bf5b4f9ca2879d185e546df9a7476ef"
+  integrity sha512-mN7/qwq133dHMMQdtJRMtZ6tK1ynzOJMZBKR34blzv3HqQpNBsaOKXkEe1kN14hcJJhzrUbsB+uix2ZOpF4kQg==
+  dependencies:
+    classnames "^2.2.1"
+    prop-types "^15.5.8"
 
 react-use-form@^0.1.0:
   version "0.1.0"

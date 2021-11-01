@@ -27,7 +27,7 @@ const initialState: PortMappingsState = {
 };
 
 export const portMappingsSlice = createSlice({
-	name: "host",
+	name: "portMappings",
 	initialState,
 	reducers: {
 		startLoading: (state) => {

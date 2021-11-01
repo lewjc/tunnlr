@@ -50,7 +50,7 @@ const initialState: TunnelsState = {
 };
 
 export const tunnelsSlice = createSlice({
-  name: "host",
+  name: "tunnels",
   initialState,
   reducers: {
     startLoading: (state) => {

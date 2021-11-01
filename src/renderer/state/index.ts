@@ -1,12 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { overArgs } from "lodash";
-import { Dispatch } from "react";
-import { arrayBuffer } from "stream/consumers";
 import { TunnelMessage } from "../../global";
 import globalReducer from "./slices/global";
 import hostReducer from "./slices/host";
 import portMappingsReducer from "./slices/portMappings";
 import tunnelConfigReducer, { addMessage } from "./slices/tunnels";
+import scriptReducer from "./slices/scripts"
 const { ipcRenderer } = window.require("electron");
 
 export const store = configureStore({
@@ -15,6 +13,7 @@ export const store = configureStore({
     host: hostReducer,
     portMappings: portMappingsReducer,
     tunnelConfig: tunnelConfigReducer,
+    scripts: scriptReducer
   },
 });
 

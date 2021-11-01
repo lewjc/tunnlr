@@ -17,7 +17,9 @@ declare module "*.scss" {
   export = content;
 }
 
-export interface HostConfig {
+declare module "devicon-react-svg";
+
+interface HostConfig {
   system: Array<Host>;
   user: Array<Host>;
 }
@@ -61,6 +63,19 @@ export interface Tunnel {
 export interface StartTunnelConfig {
   splitPorts: boolean;
   host: Host;
+}
+
+export interface ScriptConfig {
+  scriptList: Script[]
+}
+
+export interface Script {
+  fileName: string;
+  displayName: string;
+  description: string;
+  fileType: "py" | "node" | "sh";
+  defaultArgs?: string;
+
 }
 
 export interface SpawnedTunnel {

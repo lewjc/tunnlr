@@ -80,7 +80,6 @@ const addPortMappingLabels = async (evt: IpcMainEvent, port: number, labels: Arr
 	const portMappings: PortMappingConfig = readPortMappingsFromFile();
 	const modifiedIndex = portMappings.mappings.findIndex((x) => x.port === port);
 	portMappings.mappings[modifiedIndex].labels.push(...labels);
-	console.log(portMappings.mappings[modifiedIndex]);
 	try {
 		writePortMappingsToFile(portMappings);
 		evt.reply(addPortMappingLabelsEvents.response, portMappings.mappings[modifiedIndex]);

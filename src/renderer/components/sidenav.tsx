@@ -5,6 +5,7 @@ import {
   ChipIcon,
   SupportIcon,
   TerminalIcon,
+  BeakerIcon
 } from "@heroicons/react/solid";
 import IconButton from "./icon-button";
 import { version } from "../../../package.json";
@@ -22,6 +23,11 @@ export default function SideNav() {
         title: "Port Mappings",
         icon: <SupportIcon className="h-6 w-6 inline" />,
         route: "/ports",
+      },
+      {
+        title: "Scripts",
+        icon: <BeakerIcon className="h-6 w-6 inline" />,
+        route: "/scripts",
       },
       {
         title: "Tunnel Configurations",

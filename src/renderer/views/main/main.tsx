@@ -10,6 +10,8 @@ import CreateNewTunnel from "../tunnels/create-new-tunnel";
 import TunnelConsole from "../tunnel-console/tunnel-console";
 import { useAppSelector } from "../../state/hooks";
 import { selectActiveTunnelPorts } from "../../state/slices/tunnels";
+import Scripts from "../scripts";
+import AddNewScript from "../scripts/add-new-script/add-new-script";
 
 export default function Main(props: any) {
   const { activeTunnels } = useAppSelector((state) => state.tunnelConfig);
@@ -61,6 +63,12 @@ export default function Main(props: any) {
                 ></Route>
                 <Route exact path="/tunnels" component={Tunnels}></Route>
                 <Route exact path="/ports" component={PortMappings}></Route>
+                <Route exact path="/scripts" component={Scripts}></Route>
+                <Route
+                  exact
+                  path="/scripts/add"
+                  component={AddNewScript}
+                ></Route>
                 <Route
                   exact
                   path="/configuration"
