@@ -1,0 +1,16 @@
+{
+  "configurations": [
+    {
+      "name": "Debug Main Process",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceRoot}",
+      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
+
+      // This is the important stuff
+      "program": "${workspaceRoot}/dist/tunnlr.js",
+      "outFiles": ["${workspaceRoot}/dist/tunnlr.js"],
+      "sourceMaps": true
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import FormLabel from "../../components/form/label";
 import Checkbox from "../../components/form/checkbox";
 import { startTunnel } from "../../state/slices/tunnels";
 import { useHistory } from "react-router";
+import { start } from "repl";
 
 export interface StartTunnelModalProps {
   tunnel: Tunnel;
@@ -33,22 +34,26 @@ export default function StartTunnelModal({
   const { register, handleSubmit } = useForm();
   const history = useHistory();
 
-  const onSubmit = (data: any) => {
-    console.log("Starting tunnel");
+  const onSubmit = async (data: any) => {
     const selectedHost = data["Hosts"];
     const host = hosts.system.find((host) => host.domain === selectedHost);
     if (host) {
       const splitPorts = data["splitPorts"];
+      const openTunnelConsole = data["openTunnelConsole"];
       const startTunnelConfig: StartTunnelConfig = {
         splitPorts,
+        openTunnelConsole,
         host,
       };
       startTunnel(dispatch, share, tunnel, startTunnelConfig).then(() => {
-        history.push({
-          pathname: "/tunnels/console",
-          state: { activeId: tunnel.id },
-        });
+        if (openTunnelConsole) {
+          history.push({
+            pathname: "/tunnels/console",
+            state: { activeId: tunnel.id },
+          });
+        }
       });
+      setOpen(false);
     }
   };
 

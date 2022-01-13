@@ -18,6 +18,7 @@ import { dataUtils } from "../../utils";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { getSSHPortString } from "../../utils/tunnel";
 import { getWindow } from "../../main";
+import { Worker, isMainThread, parentPort, workerData } from "worker_threads";
 
 import readline from "readline";
 
@@ -111,7 +112,7 @@ const startTunnel = async (
       }));
       const processes: SpawnedProcess[] = [];
       if (startTunnelConfig.splitPorts) {
-        sshPortStrings.forEach((portStrings) => {
+        sshPortStrings.map((portStrings) => {
           const child = spawnProcess(startTunnelConfig.host.domain, [
             ...portStrings.str,
           ]);
@@ -132,7 +133,9 @@ const startTunnel = async (
           .map((x) => x.str)
           .reduce((curr, next) => [...curr, ...next], []);
 
-        const child = spawnProcess(startTunnelConfig.host.domain, [...params]);
+        const child = await spawnProcess(startTunnelConfig.host.domain, [
+          ...params,
+        ]);
         const { readErr, readStdout } = registerChildEvents(
           child,
           tunnel.id,
@@ -368,7 +371,7 @@ const killProcess = (spawnedProcess: SpawnedProcess) => {
   }
 };
 
-const spawnProcess = (remoteHost: string, sshPortString: string[]) => {
+const spawnProcess = async (remoteHost: string, sshPortString: string[]) => {
   return spawn(`ssh`, [remoteHost, "-t", "-t", ...sshPortString]);
 };
 

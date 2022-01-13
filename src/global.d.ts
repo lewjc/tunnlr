@@ -62,11 +62,12 @@ export interface Tunnel {
 
 export interface StartTunnelConfig {
   splitPorts: boolean;
+  openTunnelConsole: boolean;
   host: Host;
 }
 
 export interface ScriptConfig {
-  scriptList: Script[]
+  scriptList: Script[];
 }
 
 export interface Script {
@@ -75,7 +76,6 @@ export interface Script {
   description: string;
   fileType: "py" | "node" | "sh";
   defaultArgs?: string;
-
 }
 
 export interface SpawnedTunnel {

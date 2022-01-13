@@ -216,25 +216,20 @@ export const startTunnel = async (
   startTunnelConfig: StartTunnelConfig
 ) => {
   const { definition } = globalShare.services.tunnels;
-  return new Promise((resolve, reject) => {
-    dispatch(startStarting());
-    try {
-      ipcRenderer.send(definition.startTunnel.send, tunnel, startTunnelConfig);
-      ipcRenderer.once(definition.startTunnel.response, (event, response) => {
-        if (response.error) {
-          dispatch(hasError);
-          reject();
-        } else {
-          dispatch(addStartedTunnel(response));
-          resolve(true);
-        }
-      });
-    } catch (e) {
-      console.error(e);
-      dispatch(hasError());
-      reject();
-    }
-  });
+  dispatch(startStarting());
+  try {
+    ipcRenderer.send(definition.startTunnel.send, tunnel, startTunnelConfig);
+    ipcRenderer.once(definition.startTunnel.response, (event, response) => {
+      if (response.error) {
+        dispatch(hasError);
+      } else {
+        dispatch(addStartedTunnel(response));
+      }
+    });
+  } catch (e) {
+    console.error(e);
+    dispatch(hasError());
+  }
 };
 
 export const killTunnel = async (
